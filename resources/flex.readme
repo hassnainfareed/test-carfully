@@ -1,0 +1,7 @@
+flex 
+flex-row | flex-col
+flex-wrap
+justify-content (in horizontal)
+align-items (positionierung in y höhe vom container bestimmt)
+align-content (in vertical)
+gap | row-gap | column-gap

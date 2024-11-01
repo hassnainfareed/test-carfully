@@ -1,0 +1,23 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.dx-texteditor-input {
+  font-size: 1.4em;
+}
+
+.dx-datagrid-content .dx-data-row {
+  font-size: 1.2em;
+}
+
+.dx-datagrid-headers .dx-header-row {
+  font-size: 1.2em;
+}
+
+.navbar {
+  display: flex;
+  align-items: center;
+  padding: var(--navbar-padding, 0.5rem);
+  min-height: 4rem;
+  width: 100%;
+}

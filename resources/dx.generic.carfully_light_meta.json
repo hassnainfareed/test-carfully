@@ -1,0 +1,47 @@
+{
+  "items": [
+    {
+      "key": "$base-text-color",
+      "value": "rgba(15, 23, 42, 1)"
+    },
+    {
+      "key": "$base-border-color",
+      "value": "rgba(148, 163, 184, 1)"
+    },
+    {
+      "key": "$base-accent",
+      "value": "rgba(2, 132, 199, 1)"
+    },
+    {
+      "key": "$base-bg",
+      "value": "rgba(241, 245, 249, 1)"
+    }
+  ],
+  "baseTheme": "generic.light",
+  "outputColorScheme": "carfully_light",
+  "makeSwatch": false,
+  "version": "23.2.3",
+  "widgets": [
+    "DataGrid",
+    "Autocomplete",
+    "Calendar",
+    "CheckBox",
+    "ColorBox",
+    "DateBox",
+    "DateRangeBox",
+    "DropDownBox",
+    "Form",
+    "HtmlEditor",
+    "Lookup",
+    "NumberBox",
+    "RadioGroup",
+    "RangeSlider",
+    "SelectBox",
+    "Slider",
+    "Switch",
+    "TagBox",
+    "TextBox",
+    "Validation"
+  ],
+  "removeExternalResources": false
+}

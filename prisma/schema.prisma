@@ -1,0 +1,317 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// COMMAND: 1. Migrate: npx prisma migrate dev --create-only --name testname
+// COMMAND: 2. Migrate: npx prisma db push
+// COMMAND: 3. Generate: npx prisma generate
+
+// COMMAND: npx prisma migrate dev --create-only
+// COMMAND: npx prisma migrate dev 
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("POSTGRES_PRISMA_URL") // uses connection pooling
+  directUrl = env("POSTGRES_URL_NON_POOLING") // uses a direct connection
+}
+
+model User {
+  id                   String    @id @default(uuid())
+  email                String    @unique
+  password             String
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+  role                 String    @default("user")
+  provider             String?   // Add this line
+  cars                 Car[]
+  Address              Address[]
+  Booking              Booking[]
+  emailVerified        DateTime?
+  image                String?
+  verificationId       String?
+  resetPasswordId      String?
+  resetPasswordExpired DateTime?
+  bookingAccessToken   String?  @unique
+  guestSessionId       String?   @map("guest_session_id")
+  // Add this field
+
+  @@index([email])
+}
+
+model Car {
+  id            String    @id @default(uuid())
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  user          User      @relation(fields: [userId], references: [id])
+  userId        String
+  licenseNumber String
+  CarBrand      CarBrand  @relation(fields: [carBrandId], references: [id])
+  CarModel      CarModel  @relation(fields: [carModelId], references: [id])
+  Booking       Booking[]
+  carBrandId    String
+  carModelId    String
+}
+
+model CarBrand {
+  id        String     @id @default(uuid())
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  name      String
+  CarModel  CarModel[]
+  Car       Car[]
+}
+
+model CarModel {
+  id              String        @id @default(uuid())
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  name            String
+  length          Int
+  carBrandId      String
+  CarBrand        CarBrand      @relation(fields: [carBrandId], references: [id])
+  Car             Car[]
+  PriceCategory   PriceCategory @relation(fields: [priceCategoryId], references: [id])
+  priceCategoryId String
+}
+
+model PriceCategory {
+  id                      String                    @id @default(uuid())
+  createdAt               DateTime                  @default(now())
+  updatedAt               DateTime                  @updatedAt
+  name                    String
+  CarModel                CarModel[]
+  ServicesOnPriceCategory ServicesOnPriceCategory[]
+}
+
+model Address {
+  id          String      @id @default(uuid())
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  genderType  GenderType  @default(NOT_SPECIFIED)
+  companyName String?
+  firstname   String?
+  lastname    String?
+  street      String
+  additional  String?
+  number      String
+  postalCode  Int
+  city        String
+  User        User        @relation(fields: [userId], references: [id])
+  userId      String
+  addressType AddressType @default(PRIVATE)
+}
+
+enum GenderType {
+  NOT_SPECIFIED
+  MALE
+  FEMALE
+}
+
+enum AddressType {
+  PRIVATE
+  BUSINESS
+}
+
+model Service {
+  id                      String                    @id @default(uuid())
+  createdAt               DateTime                  @default(now())
+  updatedAt               DateTime                  @updatedAt
+  name                    String
+  description             String
+  price                   Float
+  image                   Bytes?
+  imageBase64             String?
+  averageHandlingTime     Int?
+  ServicesOnLocations     ServicesOnLocations[]
+  ServicesOnBookings      ServicesOnBookings[]
+  ServicesOnPriceCategory ServicesOnPriceCategory[]
+}
+
+model Location {
+  id                           String                         @id @default(uuid())
+  createdAt                    DateTime                       @default(now())
+  updatedAt                    DateTime                       @updatedAt
+  name                         String                         @unique
+  latitude                     Float?
+  longitude                    Float?
+  street                       String
+  number                       String
+  postalCode                   Int
+  city                         String
+  image                        Bytes?
+  imageBase64                  String?
+  activeFromDate               DateTime?
+  whatsAppReceiver             String?
+  smsReceiver                  String?
+  emailReceiver                String?
+  highBookings                 Int?
+  maxBookings                  Int?
+  mondayStart                  DateTime?                      @db.Time(0)
+  mondayEnd                    DateTime?                      @db.Time(0)
+  tuesdayStart                 DateTime?                      @db.Time(0)
+  tuesdayEnd                   DateTime?                      @db.Time(0)
+  wednesdayStart               DateTime?                      @db.Time(0)
+  wednesdayEnd                 DateTime?                      @db.Time(0)
+  thursdayStart                DateTime?                      @db.Time(0)
+  thursdayEnd                  DateTime?                      @db.Time(0)
+  fridayStart                  DateTime?                      @db.Time(0)
+  fridayEnd                    DateTime?                      @db.Time(0)
+  saturdayStart                DateTime?                      @db.Time(0)
+  saturdayEnd                  DateTime?                      @db.Time(0)
+  sundayStart                  DateTime?                      @db.Time(0)
+  sundayEnd                    DateTime?                      @db.Time(0)
+  ServicesOnLocations          ServicesOnLocations[]
+  AuxillaryServicesOnLocations AuxillaryServicesOnLocations[]
+  Booking                      Booking[]
+}
+
+model ServicesOnBookings {
+  service   Service @relation(fields: [serviceId], references: [id], onUpdate: NoAction, onDelete: NoAction)
+  serviceId String
+  booking   Booking @relation(fields: [bookingId], references: [id], onUpdate: NoAction, onDelete: NoAction)
+  bookingId String
+
+  @@id([serviceId, bookingId])
+}
+
+model ServicesOnLocations {
+  service    Service  @relation(fields: [serviceId], references: [id], onUpdate: NoAction, onDelete: NoAction)
+  serviceId  String
+  location   Location @relation(fields: [locationId], references: [id], onUpdate: NoAction, onDelete: NoAction)
+  locationId String
+
+  @@id([serviceId, locationId])
+}
+
+model ServicesOnPriceCategory {
+  service         Service       @relation(fields: [serviceId], references: [id], onUpdate: NoAction, onDelete: NoAction)
+  serviceId       String
+  priceCategory   PriceCategory @relation(fields: [priceCategoryId], references: [id], onUpdate: NoAction, onDelete: NoAction)
+  priceCategoryId String
+  price           Float
+
+  @@id([serviceId, priceCategoryId])
+}
+
+model AuxillaryService {
+  id                           String                         @id @default(uuid())
+  createdAt                    DateTime                       @default(now())
+  updatedAt                    DateTime                       @updatedAt
+  name                         String
+  description                  String
+  price                        Float
+  image                        Bytes?
+  AuxillaryServicesOnLocations AuxillaryServicesOnLocations[]
+  Booking                      Booking?                       @relation(fields: [bookingId], references: [id])
+  bookingId                    String?
+}
+
+model AuxillaryServicesOnLocations {
+  auxillaryService   AuxillaryService @relation(fields: [auxillaryServiceId], references: [id], onUpdate: NoAction, onDelete: NoAction)
+  auxillaryServiceId String
+  location           Location         @relation(fields: [locationId], references: [id])
+  locationId         String
+
+  @@id([auxillaryServiceId, locationId])
+}
+
+model Booking {
+  id                 String               @id @default(uuid())
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+  date               DateTime
+  location           Location             @relation(fields: [locationId], references: [id])
+  locationId         String
+  user               User                 @relation(fields: [userId], references: [id], onUpdate: NoAction, onDelete: NoAction)
+  userId             String
+  car                Car                  @relation(fields: [carId], references: [id])
+  carId              String
+  ServicesOnBookings ServicesOnBookings[]
+  totalPrice         Float
+  auxillaryServices  AuxillaryService[]
+  status             BookingStatus        @default(CREATED)
+  paymentStatus      BookingPaymentStatus @default(OPEN)
+  paymentMethod      String               @default("DEFAULT")
+  parkingSpot        String
+  remarkClient       String?
+  remarkEmployee     String?
+  paymentId          String?
+  assigned           String?
+  number             String               @default("")
+  isNow              Boolean              @default(true)
+  appointmentDate    DateTime?
+  appointmentTime    DateTime?            @db.Time(0)
+  invoice            Invoice?
+  discount           Discount?            @relation(fields: [discountId], references: [id])
+  discountId         String?
+  fuelCardNumber     String?
+  isFuelCardSelected Boolean @default(false)
+}
+
+model Discount {
+  id                String       @id @default(uuid())
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+  name              String       @unique
+  description       String?
+  code              String       @unique
+  discountType      DiscountType @default(MONETARY)
+  value             Float
+  validFrom         DateTime
+  validTo           DateTime
+  validForUserId    String?
+  validForServiceId String?
+  oneTime           Boolean      @default(false)
+  valid             Boolean      @default(true)
+  Booking           Booking[]
+}
+
+enum DiscountType {
+  MONETARY
+  PROCENTUAL
+  SERVICE
+}
+
+model Invoice {
+  id              String    @id @default(uuid())
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  bookingId       String    @unique
+  booking         Booking   @relation(fields: [bookingId], references: [id])
+  number          Int       @default(autoincrement())
+  name            String?
+  document        Bytes?
+  documentCreated DateTime?
+}
+
+enum BookingStatus {
+  CREATED
+  ASSIGNING
+  ACTIVE
+  CANCELED
+  FINISHED
+}
+
+enum BookingPaymentStatus {
+  AUTHORIZED
+  CANCELED
+  EXPIRED
+  FAILED
+  OPEN
+  PAID
+  PENDING
+  FUEL_CARD
+}
+
+model Log {
+  id        String   @id @default(uuid())
+  timestamp DateTime @default(now())
+  level     String
+  label     String?
+  message   String
+  email     String?
+}
+
